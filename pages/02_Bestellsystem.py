@@ -4,8 +4,6 @@ import streamlit as st
 from datetime import date
 from datetime import datetime
 import pandas as pd
-import barcode
-from barcode import EAN13 
 from PIL import Image
 import sqlite3
 import streamlit_authenticator as stauth
