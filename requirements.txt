@@ -1,6 +1,5 @@
 streamlit
 python-barcode
 streamlit_authenticator
-yaml
 sqlite3
 barcode
