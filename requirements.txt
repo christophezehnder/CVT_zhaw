@@ -3,10 +3,4 @@ python-barcode
 streamlit_authenticator
 yaml
 sqlite3
-PIL
-datetime
-csv
-os
-pandas
-barcode
 barcode
