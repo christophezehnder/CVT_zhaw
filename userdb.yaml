@@ -1,0 +1,14 @@
+credentials:
+  usernames:
+    cze:
+      email: christophe.zehnder@medics.ch
+      name: Christophe Zehnder
+      password: $2b$12$iiDO/4HN4ohqaK/h/1oecex2D/i9GjQHGoe65FQUtPsooi4r4IO0O
+    anl:
+      email: andjela.letic@medics.ch 
+      name: Andjela Letic
+      password: $2b$12$wTHvLScdIWDliMbcT7KvweYlZEp.kWOLBwRtU.w7NcWcmr89QaEZi
+cookie:
+  expiry_days: 0
+  key: stauth_cookie_key
+  name: stauth_cookie_name
