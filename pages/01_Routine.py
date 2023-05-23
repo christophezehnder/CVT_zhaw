@@ -5,7 +5,7 @@ from datetime import date
 from datetime import datetime
 import pandas as pd
 import barcode
-from barcode import Code128
+from barcode.codex import Code128
 from PIL import Image
 from barcode.writer import ImageWriter
 import sqlite3
