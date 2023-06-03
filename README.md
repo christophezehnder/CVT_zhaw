@@ -19,3 +19,7 @@ Allgemeine Informationen
 
 -	Hinweis zum Filtern nach "Analysesystem": Diese Funktion ist v.a. mit dem Hersteller "Roche" interessant, da wir im Labor mehrere Analysesysteme
 	dieses Herstellers verwenden. Bei den meisten anderen Herstellern ist diese Funktion unnötig, kann jedoch angewählt werden. 
+
+-	Hinweis zum Filtern nach "Produkttyp": Falls der gewünschte Produkttyp nicht vorhanden ist, bspw. weil zu dem ausgewählten Hersteller keine QC sondern
+	ausschliesslich Consumables vorhanden sind, wird eine Exception angezeigt. Diese wird durch eine "try - except" - Abfrage in Zukunft verhindert.
+	Zusätzlich sollen nur die jeweils vorhandenen Produkttypen auswählbar sein (WIP). 
