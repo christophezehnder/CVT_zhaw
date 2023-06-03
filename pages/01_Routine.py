@@ -12,6 +12,7 @@ import sqlite3
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
+from google.cloud import storage
 
 # SETUP
 st.set_page_config(page_title = 'Chargenverwaltungstool')
@@ -43,9 +44,24 @@ if st.session_state['authentication_status']:
 
     with tab1:
 
-        def open_db():
-            '''open the db and define cur and conn vars'''
-            #conn = sqlite3.connect("//10.20.10.23/lw/Molekulare Diagnostik/CVTv5_db/db_base.db")
+        def download_database_file(bucket_name, file_name, project_id):
+            storage_client = storage.Client(project=project_id)
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(file_name)
+            blob.download_to_filename(file_name)
+
+        def upload_database_file(bucket_name, file_name, project_id):
+            storage_client = storage.Client(project=project_id)
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(file_name)
+            blob.upload_from_filename(file_name)
+
+        def open_db(project_id):
+            # '''open the db and define cur and conn vars'''
+            # Download the SQLite database file from Google Cloud Storage
+            bucket_name = "cvtv5"
+            file_name = "db_base.db"
+            download_database_file(bucket_name, file_name, project_id)
             conn = sqlite3.connect("./db_base.db")
             cur = conn.cursor()
             return cur, conn
@@ -57,14 +73,6 @@ if st.session_state['authentication_status']:
             listname = list(set(listname))
             listname = sorted(listname)
             return listname
-
-
-        # def open_db():
-        #     '''open the db and define cur and conn vars'''
-        #     conn = sqlite3.connect("db_base.db")
-        #     cur = conn.cursor()
-        #     return cur, conn
-
 
         def print_barcode(barcode):
             # '''print unique_id as 128 code bc'''
@@ -85,12 +93,13 @@ if st.session_state['authentication_status']:
             #     mysocket.close()
             # except:
             #     print("Error with the connection")
-
-
             return
 
     # Load Database
-        cur, conn = open_db()
+        project_id = "parabolic-env-387006"
+        file_name = "db_base.db"
+        bucket_name = "cvtv5"
+        cur, conn = open_db(project_id)
 
     # Create Manufacturer list and selectbox
 
@@ -173,6 +182,7 @@ if st.session_state['authentication_status']:
         if add_product:
             cur.execute("SELECT rowid, product FROM instock WHERE product = ? AND lot = ?", (product_select, lot_input,))
             conn.commit()
+            upload_database_file(bucket_name, file_name, project_id)
             data = cur.fetchall()
 
             if not data:
@@ -186,6 +196,7 @@ if st.session_state['authentication_status']:
                 data = cur.fetchone()
                 barcode = str(data[0])
                 conn.commit()
+                upload_database_file(bucket_name, file_name, project_id)
                 # print_barcode(barcode)
 
             else:
@@ -197,6 +208,7 @@ if st.session_state['authentication_status']:
                 data = cur.fetchone()
                 barcode = str(data[0])
                 conn.commit()
+                upload_database_file(bucket_name, file_name, project_id)
                 # print_barcode(barcode)
 
             cur.execute("SELECT is_stock, unique_id FROM instock WHERE rowid = ?", (rowid,))
@@ -221,7 +233,7 @@ if st.session_state['authentication_status']:
         uid_input_button = st.button('Produkt aktivieren')
 
         if uid_input_button:
-            cur, conn = open_db()
+            cur, conn = open_db(project_id)
             cur.execute("SELECT * FROM instock WHERE unique_id = ?", (uid_input, ))
             data = cur.fetchall()
             product_activate = convert_single_tuple_to_list(data)[0]
@@ -234,12 +246,13 @@ if st.session_state['authentication_status']:
             st.success(f'Sie haben erfolgreich 1 Einheit {product_activate} ausgebucht. Neuer Bestand: {in_stock_updated[0][3]}')
                 
             conn.commit()
+            upload_database_file(bucket_name, file_name, project_id)
 
         conn.close()
 
     with tab3:   
 
-        cur, conn = open_db()
+        cur, conn = open_db(project_id)
 
         cur.execute("SELECT * FROM instock")
         data = cur.fetchall()

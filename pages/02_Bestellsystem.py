@@ -9,6 +9,7 @@ import sqlite3
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
+from google.cloud import storage
 
 # SETUP
 st.set_page_config(page_title = 'Chargenverwaltungstool', page_icon = './icon_med.jpeg')
@@ -39,9 +40,24 @@ if st.session_state['authentication_status']:
 
     with tab1:
 
-        def open_db():
-            '''open the db and define cur and conn vars'''
-            #conn = sqlite3.connect("//10.20.10.23/lw/Molekulare Diagnostik/CVTv5_db/db_base.db")
+        def download_database_file(bucket_name, file_name, project_id):
+            storage_client = storage.Client(project=project_id)
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(file_name)
+            blob.download_to_filename(file_name)
+
+        def upload_database_file(bucket_name, file_name, project_id):
+            storage_client = storage.Client(project=project_id)
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(file_name)
+            blob.upload_from_filename(file_name)
+
+        def open_db(project_id):
+            # '''open the db and define cur and conn vars'''
+            # Download the SQLite database file from Google Cloud Storage
+            bucket_name = "cvtv5"
+            file_name = "db_base.db"
+            download_database_file(bucket_name, file_name, project_id)
             conn = sqlite3.connect("./db_base.db")
             cur = conn.cursor()
             return cur, conn
@@ -53,7 +69,11 @@ if st.session_state['authentication_status']:
             listname = sorted(listname)
             return listname
 
-        cur, conn = open_db()
+        project_id = "parabolic-env-387006"
+        file_name = "db_base.db"
+        bucket_name = "cvtv5"
+        cur, conn = open_db(project_id)
+        
         cur.execute("SELECT supplier FROM base")
         data = cur.fetchall()
         supplier_list = []
@@ -66,7 +86,7 @@ if st.session_state['authentication_status']:
 
         st.markdown('________________________________________')
         
-        cur, conn = open_db()
+        cur, conn = open_db(project_id)
         if supplier_select == "Alle":
             cur.execute("SELECT product, target_stock FROM base")
             data_target = cur.fetchall()
@@ -82,9 +102,6 @@ if st.session_state['authentication_status']:
 
         targstock_dict = {item[0]: item[1] for item in targstock_list}
 
-        # for key, value in targstock_list:
-        #     st.write(key, value)
-
         instock_dict = {}
         for item in instock_list:
             name = item[0]
@@ -95,21 +112,14 @@ if st.session_state['authentication_status']:
             else:
                 instock_dict[name] = value
 
-        # for key, value in instock_dict.items():
-        #     ordercheck_state = st.checkbox(label =f'{key}: {value}')
-
-
         for item in targstock_dict:
             if item in instock_dict:
                 st.write(item, targstock_dict[item], instock_dict[item])
             else:
                 st.write(item, targstock_dict[item], "N/A")
-
-
-
-
         
         conn.commit()
+        upload_database_file(bucket_name, file_name, project_id)
         conn.close()
 
     with tab2:
