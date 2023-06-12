@@ -3,3 +3,4 @@ streamlit_authenticator
 barcode
 google-cloud-storage
 google-auth
+python-barcode
